@@ -2,7 +2,7 @@
 const readline = require("readline");
 const process = require('process');
 
-//** Interface for reading data from a readable stream */
+//** Interface for reading data from a readable stream. */
 const readlineInterface = readline.createInterface({
     input: process.stdin, 
     output: process.stdout,
