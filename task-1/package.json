@@ -1,0 +1,21 @@
+{
+  "name": "stdin-stdout",
+  "version": "1.0.0",
+  "description": "",
+  "main": "bin/index.js",
+  "scripts": {
+    "build": "babel index.js -d dist",
+    "start": "npm run build && nodemon dist/index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@babel/cli": "^7.19.3",
+    "@babel/core": "^7.20.5",
+    "@babel/preset-env": "^7.20.2",
+    "nodemon": "^2.0.20"
+  },
+  "bin": {
+    "hello": "./bin/index.js"
+  }
+}
