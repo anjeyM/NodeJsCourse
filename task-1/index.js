@@ -27,6 +27,3 @@ const ask = (inputString) => {
 };
 
 ask("Put the string to revert it (to stop: CTRL + C): ")
-
-
-
