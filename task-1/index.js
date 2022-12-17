@@ -1,6 +1,7 @@
 #!/usr/bin/env node
-const readline = require("readline");
-const process = require('process');
+import * as readline from 'node:readline';
+import * as process from 'node:process';
+
 
 //** Interface for reading data from a readable stream. */
 const readlineInterface = readline.createInterface({
@@ -9,7 +10,7 @@ const readlineInterface = readline.createInterface({
 });
 
 //** Reverces the string. */
-function reverseString(string) {
+const reverseString = (string) => {
     return string.split("").reverse().join("");
 }
 
@@ -17,7 +18,7 @@ function reverseString(string) {
  * Gets user input as a string, reverts it and prints the output to the terminal.
  * Repeas the whole process recursively until we end the Node.js process by pressing ctrl + c. 
  */
-function ask(inputString) {
+const ask = (inputString) => {
     readlineInterface.question(inputString, (resultString) => {
         const result = reverseString(resultString.toString());
         readlineInterface.write(`Result:  ${result}\n`)
