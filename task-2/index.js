@@ -1,5 +1,6 @@
-const fs = require('fs')
-const csv = require('csvtojson');
+import * as fs from 'node:fs';
+import csv from 'csvtojson';
+
 let fileReadStream = fs.createReadStream("nodejs.csv");
 
 //** Property key to be deleted. */
@@ -9,7 +10,7 @@ const KEY_TO_DELETE = 'amount';
 const VALID_PATTERN = /^[a-zA-Z]+$/;
 
 //** deletes unnecessary property.  */
-const replacer = function() {
+const replacer = () => {
     return function(key, value) {
         if (key.toLowerCase() === KEY_TO_DELETE) {
             return undefined
