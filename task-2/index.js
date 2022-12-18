@@ -1,6 +1,6 @@
 import * as fs from 'node:fs';
+import csv from 'csvtojson';
 
-const csv = require('csvtojson');
 let fileReadStream = fs.createReadStream("nodejs.csv");
 
 //** Property key to be deleted. */
