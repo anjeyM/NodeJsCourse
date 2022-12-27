@@ -4,8 +4,6 @@
 dist
 tmp
 out-tsc
-task-3/src/**/*.d.ts
-task-3/src/**/*.js
 
 
 # dependencies
