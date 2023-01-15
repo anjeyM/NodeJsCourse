@@ -1,5 +1,5 @@
 import {Request, Response, NextFunction} from "express";
-import {errorResponse} from '../../shared/services/validation/validation.service';
+import {errorResponse} from '../../services/validation/validation.service';
 //eslint-disable-next-line
 export const validateSchema = (schema: any) => {
     return (req: Request, res: Response, next: NextFunction) => {

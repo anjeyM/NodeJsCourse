@@ -3,6 +3,7 @@
   "display": "Node 18",
 
   "compilerOptions": {
+    "experimentalDecorators": true,
     "module": "commonjs",
     "target": "es2016",
     "declaration": false,
