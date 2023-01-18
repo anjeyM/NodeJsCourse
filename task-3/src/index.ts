@@ -6,6 +6,7 @@ import helmet from "helmet";
 import {usersRouter} from './routes/user.route';
 import {errorHandler} from "./middleware/error/error.middleware";
 import {notFoundHandler} from "./middleware/not-found/not-found.middleware";
+import {sequelizeConnection} from './config/config';
 
 dotenv.config();
 
@@ -22,6 +23,12 @@ app.use(notFoundHandler);
 /** Server Activation. */
 const server = http.createServer(app);
 const port = parseInt(process.env.PORT as string, 10) || 3000;
-server.listen(port);
-app.set('x-powered-by', false);
-console.debug('Server listening on port ' + port);
+
+sequelizeConnection
+  .sync({ alter: true })
+  .catch((err) => {
+    console.log("Error", err);
+  });
+  server.listen(port, () => {
+  console.log("Server started on port ", port);
+});

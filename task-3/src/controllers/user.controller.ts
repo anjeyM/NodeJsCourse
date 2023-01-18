@@ -1,17 +1,16 @@
 import {Request, Response, NextFunction} from "express";
-import * as UserService from "../shared/services/user-service/user.service";
-import {User, BaseUser} from "../shared/types/interfaces";
-import {v4 as uuidv4} from 'uuid';
+import * as UserService from "../services/user-service/user.service";
+import {User} from '../models/users';
 
 //** Gets all users. */
 export const getUsers = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const users: User[] = await UserService.findAll();
-        res.status(200).send(users);
+        const users: User[] = await User.findAll();
+        return res.status(200).send(users);
         //eslint-disable-next-line
       } catch (error: any) {
-        res.status(500).send(error.message);
         next(error);
+        return res.status(500).send(error.message);
       }
 }
 
@@ -20,17 +19,18 @@ export const getSortedUserList = async (req: Request, res: Response, next: NextF
     const limit: number = parseInt(req.params.limit);
     
     try {
-      const users: User[] | null = await UserService.getAutoSuggestList(limit);
+      const users: User[] = await User.findAll();
+      const usersLimit: User[] | null = await UserService.getAutoSuggestList(limit, users);
 
       if (users) {
-          return res.status(200).send(users);
+          return res.status(200).send(usersLimit);
       }
 
       res.status(404).send("users not found");
       //eslint-disable-next-line
     } catch (error: any) {
-      res.status(500).send(error.message);
       next(error);
+      return res.status(500).send(error.message);
     }
 };
 
@@ -39,67 +39,57 @@ export const getUser = async (req: Request, res: Response, next: NextFunction) =
     const id: string = req.params.id;
   
     try {
-      const user: User = await UserService.find(id);
-  
+      const user: User | null = await User.findByPk(id);
       if (user) {
         return res.status(200).send(user);
       }
   
-      res.status(404).send("user not found");
+      return res.status(404).send("user not found");
       //eslint-disable-next-line
     } catch (error: any) {
-      res.status(500).send(error.message);
       next(error);
+      return res.status(500).send(error.message);
     }
 };
 
 //** Creates new user. */
 export const setUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const user: BaseUser = req.body;
-
-    const newItem = await UserService.createUser(user);
-
-    res.status(201).json(newItem);
+    const user: User = await User.create({ ...req.body });
+    
+    return res.status(201).json(user);
     //eslint-disable-next-line
   } catch (error: any) {
-    res.status(500).send(error.message);
     next(error);
+    return res.status(500).send(error.message);
   }
 };
 
 //** Updates user. */
 export const updateUser = async (req: Request, res: Response, next: NextFunction) => {
-  const id: string = uuidv4();
-
   try {
-    const userUpdate: User = req.body;
-    const existingUser: User = await UserService.find(id);
+    const { id } = req.params;
+    await User.update({ ...req.body }, { where: { id } });
+    const updatedUser: User | null = await User.findByPk(id);
 
-    if (existingUser) {
-      const updatedItem = await UserService.updateUser(id, userUpdate);
-      return res.status(200).json(updatedItem);
-    }
-
-    const newItem = await UserService.createUser(userUpdate);
-
-    res.status(201).json(newItem);
+    return res.status(201).json(updatedUser);
     //eslint-disable-next-line
   } catch (error: any) {
-    res.status(500).send(error.message);
     next(error);
+    return res.status(500).send(error.message);
   }
 };
 
 //** Soft deletes user. */
 export const deleteUser = async (req: Request, res: Response) => {
   try {
-    const id: string = uuidv4();
-    await UserService.deleteUser(id);
+    const { id } = req.params;
+    const deletedUser: User | null = await User.findByPk(id);
+    await User.destroy({ where: { id } });
 
-    res.sendStatus(204);
+    return res.sendStatus(204).json(deletedUser);
     //eslint-disable-next-line
   } catch (error: any) {
-    res.status(500).send(error.message);
+    return res.status(500).send(error.message);
   }
 };
