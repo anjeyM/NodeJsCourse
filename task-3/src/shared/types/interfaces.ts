@@ -27,3 +27,19 @@ export const validationSchema = Joi.object({
     age: Joi.number().min(4).max(130).required(),
     isDeleted: Joi.boolean().required(),
 })
+
+//** Permission types. */
+export enum Permissions {
+    READ = 'read',
+    WRITE = 'write',
+    DELETE = 'delete',
+    SHARE = 'share',
+    UPLOAD_FILES = 'upload_files',
+}
+
+//** Group instance interface. */
+export interface Group {
+    id: bigint;
+    name: string;
+    permissions: Array<Permissions>;
+}
