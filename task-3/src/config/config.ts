@@ -1,20 +1,30 @@
-import {Sequelize} from 'sequelize-typescript';
-import {User} from '../models/users';
+import dotenv from "dotenv"
 
-const {DB_PORT, DB_HOST, DB_NAME, DB_USERNAME, DB_PASSWORD} = process.env;
+dotenv.config();
 
-export const sequelizeConnection = new Sequelize({
-  host: DB_HOST,
-  dialect: 'postgres',
-  username: DB_USERNAME,
-  password: DB_PASSWORD,
-  database: DB_NAME,
-  port: Number(DB_PORT),
-  models: [User],
-});
+const {DB_HOST, DB_NAME, DB_USERNAME, DB_PASSWORD} = process.env;
 
-sequelizeConnection.authenticate().then(() => {
-    console.log('Connection has been established successfully.');
- }).catch((error) => {
-    console.error('Unable to connect to the database: ', error);
- });
+//eslint-disable-next-line
+module.exports = {
+  "development": {
+    "username": DB_USERNAME,
+    "password": DB_PASSWORD,
+    "database": DB_NAME,
+    "host": DB_HOST,
+    "dialect": "postgres"
+  },
+  "test": {
+    "username": "root",
+    "password": null,
+    "database": "database_test",
+    "host": "127.0.0.1",
+    "dialect": "postgres"
+  },
+  "production": {
+    "username": "root",
+    "password": null,
+    "database": "database_production",
+    "host": "127.0.0.1",
+    "dialect": "postgres"
+  }
+}

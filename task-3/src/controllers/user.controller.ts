@@ -1,6 +1,7 @@
 import {Request, Response, NextFunction} from "express";
 import * as UserService from "../services/user-service/user.service";
 import {User} from '../models/users';
+import { options } from "joi";
 
 //** Gets all users. */
 export const getUsers = async (req: Request, res: Response, next: NextFunction) => {
