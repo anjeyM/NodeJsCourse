@@ -1,7 +1,5 @@
 import * as express from 'express';
 import {getGroups, getGroup, setGroup, updateGroup, deleteGroup} from '../controllers/groups.controller';
-import {validateSchema} from '../middleware/validation/validation.middleware';
-import {validationSchema} from '../shared/types/interfaces';
 
 export const groupsRouter = express.Router();
 
@@ -12,10 +10,10 @@ groupsRouter.get('/', getGroups);
 groupsRouter.get('/:id', getGroup);
 
 //** POST groups */ 
-groupsRouter.post("/", validateSchema(validationSchema), setGroup);
+groupsRouter.post("/", setGroup);
 
 //** PUT group/:id */
-groupsRouter.put("/:id", validateSchema(validationSchema), updateGroup);
+groupsRouter.put("/:id", updateGroup);
 
 //** DELETE group/:id */
 groupsRouter.delete("/:id", deleteGroup);
