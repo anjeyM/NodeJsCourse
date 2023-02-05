@@ -1,11 +1,15 @@
 import {Request, Response, NextFunction} from "express";
 import * as UserService from "../services/user-service/user.service";
-import {User} from '../models/users';
+import {User, Group, UserGroup} from '../models';
+import {GroupInterface, UserInterface} from '../shared/types/interfaces';
+import {addUsersToGroup} from '../transactions/user/user.transactions';
 
 //** Gets all users. */
 export const getUsers = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const users: User[] = await User.findAll();
+        const users: UserInterface[] = await User.findAll({
+          include: [{model: Group}],
+        });
         return res.status(200).send(users);
         //eslint-disable-next-line
       } catch (error: any) {
@@ -19,8 +23,8 @@ export const getSortedUserList = async (req: Request, res: Response, next: NextF
     const limit: number = parseInt(req.params.limit);
     
     try {
-      const users: User[] = await User.findAll();
-      const usersLimit: User[] | null = await UserService.getAutoSuggestList(limit, users);
+      const users: UserInterface[] = await User.findAll();
+      const usersLimit: UserInterface[] | null = await UserService.getAutoSuggestList(limit, users);
 
       if (users) {
           return res.status(200).send(usersLimit);
@@ -39,7 +43,14 @@ export const getUser = async (req: Request, res: Response, next: NextFunction) =
     const id: string = req.params.id;
   
     try {
-      const user: User | null = await User.findByPk(id);
+      const user: UserInterface | null = await User.findByPk(id, {
+        include: [{
+          model: Group,
+          as: 'groups',
+          required: false,
+          attributes: ['id', 'name', 'permissions'],
+        }],
+      },);
       if (user) {
         return res.status(200).send(user);
       }
@@ -52,44 +63,97 @@ export const getUser = async (req: Request, res: Response, next: NextFunction) =
     }
 };
 
-//** Creates new user. */
-export const setUser = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const user: User = await User.create({ ...req.body });
-    
-    return res.status(201).json(user);
-    //eslint-disable-next-line
-  } catch (error: any) {
-    next(error);
-    return res.status(500).send(error.message);
+//** Creates new user with group info. */
+export const setUser = async (req: Request, res: Response) => {
+  const user = {
+    id: req.body.userId,
+    login: req.body.login,
+    password: req.body.password,
+    age: req.body.age,
+    isdeleted: req.body.isdeleted,
+  };
+
+  const savedUser = await User.create(user);
+
+  if (!savedUser) {
+    return res.status(500).send('Something went wrong trying to create user.');
   }
+
+  await Promise.all(await req.body.groups.map(async (groupElement: GroupInterface) => {
+    const group = await Group.findByPk(groupElement.id);
+
+    if (!group) {
+      return res.status(500).send('One or more of the group ids were invalid');
+    }
+
+    const savedUserGroup = await addUsersToGroup(savedUser.id, group.id);
+
+    // Early exit if user group was not saved
+    if (!savedUserGroup) {
+      return res.status(500).send('Something went wrong trying to create the user group.');
+    }
+  }));
+
+  return res.status(201).json(savedUser);
 };
 
 //** Updates user. */
-export const updateUser = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { id } = req.params;
-    await User.update({ ...req.body }, { where: { id } });
-    const updatedUser: User | null = await User.findByPk(id);
+export const updateUser = async (req: Request, res: Response) => {
+  const user = await User.findByPk(req.params.id);
 
-    return res.status(201).json(updatedUser);
-    //eslint-disable-next-line
-  } catch (error: any) {
-    next(error);
-    return res.status(500).send(error.message);
+  if (!user) {
+    return res.status(400).send('User not found');
   }
+
+  const updatedUser = await user.update({
+    id: req.body.id || user.id,
+    login: req.body.login || user.login,
+    password: req.body.password || user.password,
+    age: req.body.age || user.age,
+    isdeleted: req.body.isdeleted || user.isdeleted,
+  }, { where: { id: req.params.id } });
+
+  if (!updatedUser) {
+    return res.status(500).send('Something went wrong trying to update user');
+  }
+
+  const groups = await user.getGroups();
+  user.removeGroups(groups);
+
+  await Promise.all(await req.body.groups.map(async (groupElement: GroupInterface) => {
+    const group = await Group.findByPk(groupElement.id);
+
+    const joinedTable = {
+      userId: user.id,
+      groupId: group.id,
+    };
+
+    const savedUserGroup = await UserGroup.create(joinedTable);
+
+    if (!savedUserGroup) {
+      return res.status(500).send('Something went wrong trying to update the user. Failed to create user group');
+    }
+  }));
+
+  return res.status(201).json(updatedUser);
 };
 
-//** Soft deletes user. */
+//** Deletes user. */
 export const deleteUser = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-    const deletedUser: User | null = await User.findByPk(id);
-    await User.destroy({ where: { id } });
+  const user = await User.findByPk(req.params.id);
 
-    return res.sendStatus(204).json(deletedUser);
-    //eslint-disable-next-line
-  } catch (error: any) {
-    return res.status(500).send(error.message);
+  const groups = await user.getGroups();
+  user.removeGroups(groups);
+
+  const deletedUser = await User.destroy({
+    where: {
+      id: req.params.id,
+    },
+  });
+
+  if (!deletedUser) {
+    return res.status(500).send('There was an error trying to delete the user.');
   }
+
+  return res.status(201).json(deletedUser);
 };

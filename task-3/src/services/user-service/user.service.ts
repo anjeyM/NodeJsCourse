@@ -1,9 +1,9 @@
-import {User} from '../../models/users';
+import {UserInterface} from '../../shared/types/interfaces';
 
 //** Gets limit number of users, sorted by login field. */
-export const getAutoSuggestList = (limit: number, users: User[]): User[]|null => {
+export const getAutoSuggestList = (limit: number, users: UserInterface[]): UserInterface[]|null => {
   const sortedUsers = Object.values(users).sort(
-    (user1: User, user2: User) => user1.login.toLowerCase() > user2.login.toLowerCase() ? 1 : -1);
+    (user1: UserInterface, user2: UserInterface) => user1.login.toLowerCase() > user2.login.toLowerCase() ? 1 : -1);
 
   if (!sortedUsers) {
     return null;

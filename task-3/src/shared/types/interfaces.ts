@@ -8,12 +8,12 @@ export interface BaseUser {
     isDeleted: boolean;
 }
 
-export interface User extends BaseUser {
+export interface UserInterface extends BaseUser {
     id: string;
 }
 
 export interface Users {
-    [id: string]: User;
+    [id: string]: UserInterface;
 }
 
 export interface RequestSchema extends ValidatedRequestSchema {
@@ -38,8 +38,14 @@ export enum Permissions {
 }
 
 //** Group instance interface. */
-export interface Group {
+export interface GroupInterface {
     id: bigint;
     name: string;
     permissions: Array<Permissions>;
+}
+
+export interface UserGroupInterface {
+    id: bigint;
+    userId: bigint;
+    groupId: bigint;
 }

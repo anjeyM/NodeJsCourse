@@ -1,10 +1,11 @@
 import {Request, Response, NextFunction} from "express";
-import {Group} from '../models/group';
+import {Group} from '../models';
+import {GroupInterface} from '../shared/types/interfaces';
 
 //** Gets all groups. */
 export const getGroups = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const groups: Group[] = await Group.findAll();
+        const groups: GroupInterface[] = await Group.findAll();
         return res.status(200).send(groups);
         //eslint-disable-next-line
       } catch (error: any) {
@@ -18,7 +19,7 @@ export const getGroup = async (req: Request, res: Response, next: NextFunction) 
     const id: string = req.params.id;
   
     try {
-      const group: Group | null = await Group.findByPk(id);
+      const group: GroupInterface | null = await Group.findByPk(id);
       if (group) {
         return res.status(200).send(group);
       }
@@ -34,7 +35,7 @@ export const getGroup = async (req: Request, res: Response, next: NextFunction) 
 //** Creates new group. */
 export const setGroup = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const group: Group = await Group.create({ ...req.body });
+    const group: GroupInterface = await Group.create({ ...req.body });
     
     return res.status(201).json(group);
     //eslint-disable-next-line
@@ -49,7 +50,7 @@ export const updateGroup = async (req: Request, res: Response, next: NextFunctio
   try {
     const { id } = req.params;
     await Group.update({ ...req.body }, { where: { id } });
-    const updatedGroup: Group | null = await Group.findByPk(id);
+    const updatedGroup: GroupInterface | null = await Group.findByPk(id);
 
     return res.status(201).json(updatedGroup);
     //eslint-disable-next-line
@@ -63,7 +64,7 @@ export const updateGroup = async (req: Request, res: Response, next: NextFunctio
 export const deleteGroup = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const deletedGroup: Group | null = await Group.findByPk(id);
+    const deletedGroup: GroupInterface | null = await Group.findByPk(id);
     await Group.destroy({ where: { id } });
 
     return res.sendStatus(204).json(deletedGroup);

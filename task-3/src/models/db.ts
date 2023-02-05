@@ -1,5 +1,6 @@
 import {Sequelize} from 'sequelize';
-import dotenv from "dotenv"
+import {User, Group, UserGroup} from '../models/';
+import dotenv from "dotenv";
 
 dotenv.config();
 
@@ -13,12 +14,14 @@ export const sequelize = new Sequelize({
     database: DB_NAME,
     port: Number(DB_PORT),
 });
-
 export class DB {
     public static sequelize: Sequelize;
 
     public static async initDB() {
         try {
+            await User.sync(),
+            await Group.sync(),
+            await UserGroup.sync(),
             await sequelize.authenticate();
             console.log('DB connection success');
         } catch (error: any) {
