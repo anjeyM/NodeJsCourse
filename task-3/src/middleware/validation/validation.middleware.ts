@@ -8,10 +8,11 @@ export const validateSchema = (schema: any) => {
             allowUnknown: false,
         })
 
-        if(error.isJoi) {
+        if(error) {
             res.status(400).json(errorResponse(error.details));
         } else {
             next();
         }
+        next();
     }
 }

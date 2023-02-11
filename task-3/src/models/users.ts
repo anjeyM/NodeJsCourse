@@ -1,40 +1,35 @@
-import {Table, Model, Column, DataType} from "sequelize-typescript";
-import {Group} from './group';
+import {Model, DataTypes, BuildOptions} from 'sequelize';
+import {sequelize} from './db';
 
-//** A Model for Users table. */
-@Table({
-    timestamps: false,
-    tableName: "users",
-    freezeTableName: true,
-})
-export class User extends Model {
-    @Column({
-        type: DataType.BIGINT,
-        primaryKey: true,
-        references: {
-            model: Group,
-            key: 'id',
-          }
-    })
-    id!: bigint;
+type UserStatic = typeof Model
+    & {associate: (models: any) => void}
+    & {new(values?: Record<string, unknown>, options?: BuildOptions): any}
 
-    @Column({
-        type: DataType.STRING,
-    })
-    login!: string;
+export const User = <UserStatic>sequelize.define('users', {
+  id: {
+    type: DataTypes.INTEGER,
+    autoIncrement: true,
+    primaryKey: true,
+    unique: true,
+  },
+  login: {
+    type: new DataTypes.STRING(128),
+    allowNull: false,
+  },
+  password: {
+    type: new DataTypes.STRING(128),
+    allowNull: false,
+  },
+  age: {
+      type: new DataTypes.STRING(128),
+      allowNull: true,
+  },
+  isdeleted: {
+      type: new DataTypes.BOOLEAN,
+      allowNull: false,
+  },
+}, {
+  timestamps: false,
+});
 
-    @Column({
-        type: DataType.STRING,
-    })
-    password!: string;
 
-    @Column({
-        type: DataType.INTEGER,
-    })
-    age!: number;
-
-    @Column({
-        type: DataType.BOOLEAN,
-    })
-    isdeleted!: boolean;
-}

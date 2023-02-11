@@ -1,26 +1,27 @@
-import {Table, Model, Column, DataType} from "sequelize-typescript";
-import {Permissions} from '../shared/types/interfaces';
+import type {BuildOptions} from 'sequelize';
+import {Model, DataTypes} from 'sequelize';
 
-//** A Model for Group table. */
-@Table({
-    timestamps: false,
-    tableName: "groups",
-    freezeTableName: true,
-})
-export class Group extends Model {
-    @Column({
-        type: DataType.BIGINT,
-        primaryKey: true,
-    })
-    id!: bigint;
+import {sequelize} from './db';
+  
+type GroupStatic = typeof Model
+    & {associate: (models: any) => void}
+    & {new(values?: Record<string, unknown>, options?: BuildOptions): any}
 
-    @Column({
-        type: DataType.STRING,
-    })
-    name!: string;
-
-    @Column({
-        type: DataType.ARRAY(DataType.STRING),
-    })
-    permissions!: Array<Permissions>;
-}
+export const Group = <GroupStatic>sequelize.define('groups', {
+  id: {
+    type: DataTypes.INTEGER,
+    autoIncrement: true,
+    primaryKey: true,
+    unique: true,
+  },
+  name: {
+    type: new DataTypes.STRING(128),
+    allowNull: false,
+  },
+  permissions: {
+    type: new DataTypes.ARRAY(DataTypes.STRING),
+    allowNull: false,
+  },
+}, {
+  timestamps: false,
+});
