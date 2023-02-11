@@ -5,96 +5,66 @@ import {GroupInterface, UserInterface} from '../shared/types/interfaces';
 import {addUsersToGroup} from '../transactions/user/user.transactions';
 
 //** Gets all users. */
-export const getUsers = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        const users: UserInterface[] = await User.findAll({
-          include: [{model: Group}],
-        });
-        return res.status(200).send(users);
-        //eslint-disable-next-line
-      } catch (error: any) {
-        next(error);
-        return res.status(500).send(error.message);
-      }
+export const getUsers = async (req: Request, res: Response) => {
+  User.findAll({include: Group}).then((users: UserInterface[]) => {
+    if (!users) {
+      return res.status(500).send("users not found");
+    }
+    return res.status(200).send(users); 
+  }).catch(error => {
+    console.log(error);
+    return res.status(500).send(error);
+  });
 }
 
 //** Gets sorted list (by login) of N users. */
 export const getSortedUserList = async (req: Request, res: Response, next: NextFunction) => {
-    const limit: number = parseInt(req.params.limit);
-    
-    try {
-      const users: UserInterface[] = await User.findAll();
-      const usersLimit: UserInterface[] | null = await UserService.getAutoSuggestList(limit, users);
+  const limit: number = parseInt(req.params.limit);
 
-      if (users) {
-          return res.status(200).send(usersLimit);
-      }
-
-      res.status(404).send("users not found");
-      //eslint-disable-next-line
-    } catch (error: any) {
-      next(error);
-      return res.status(500).send(error.message);
+  User.findAll({include: Group}).then((users: UserInterface[]) => {
+    if (!users) {
+      return res.status(500).send("users not found");
     }
+    const usersLimit: UserInterface[] | null = UserService.getAutoSuggestList(limit, users);
+    return res.status(200).send(usersLimit || []); 
+  }).catch(error => {
+    console.log(error);
+    next(error);
+    return res.status(500).send(error);
+  });
 };
 
 //** Gets user by Id. */
 export const getUser = async (req: Request, res: Response, next: NextFunction) => {
-    const id: string = req.params.id;
-  
-    try {
-      const user: UserInterface | null = await User.findByPk(id, {
-        include: [{
-          model: Group,
-          as: 'groups',
-          required: false,
-          attributes: ['id', 'name', 'permissions'],
-        }],
-      },);
-      if (user) {
-        return res.status(200).send(user);
-      }
-  
-      return res.status(404).send("user not found");
-      //eslint-disable-next-line
-    } catch (error: any) {
-      next(error);
-      return res.status(500).send(error.message);
+  User.findByPk(req.params.id, {include: Group}).then((user: UserInterface) => {
+    if (!user) {
+      return res.status(500).send("user not found");
     }
+    return res.status(200).send(user); 
+  }).catch(error => {
+    console.log(error);
+    next(error);
+    return res.status(500).send(error);
+  });
 };
 
 //** Creates new user with group info. */
-export const setUser = async (req: Request, res: Response) => {
-  const user = {
-    id: req.body.userId,
-    login: req.body.login,
-    password: req.body.password,
-    age: req.body.age,
-    isdeleted: req.body.isdeleted,
-  };
-
-  const savedUser = await User.create(user);
-
-  if (!savedUser) {
-    return res.status(500).send('Something went wrong trying to create user.');
-  }
-
-  await Promise.all(await req.body.groups.map(async (groupElement: GroupInterface) => {
-    const group = await Group.findByPk(groupElement.id);
-
-    if (!group) {
-      return res.status(500).send('One or more of the group ids were invalid');
+export const setUser = async (req: Request, res: Response, next: NextFunction) => {
+  User.create({ ...req.body }).then(async (user: UserInterface) => {
+    if(!user) {
+      return res.status(500).send('Something went wrong trying to create user.');
     }
-
-    const savedUserGroup = await addUsersToGroup(savedUser.id, group.id);
-
-    // Early exit if user group was not saved
+    // Add created user to the user permission group (id: 1);
+    const savedUserGroup = await addUsersToGroup(user.id, 1);
     if (!savedUserGroup) {
-      return res.status(500).send('Something went wrong trying to create the user group.');
+      return res.status(500).send('Something went wrong trying to add user to group.');
     }
-  }));
-
-  return res.status(201).json(savedUser);
+    return res.status(201).json(user);
+  }).catch(error => {
+    console.log(error);
+    next(error);
+    return res.status(500).send(error);
+  })
 };
 
 //** Updates user. */
@@ -124,8 +94,8 @@ export const updateUser = async (req: Request, res: Response) => {
     const group = await Group.findByPk(groupElement.id);
 
     const joinedTable = {
-      userId: user.id,
-      groupId: group.id,
+      user_id: user.id,
+      group_id: group.id,
     };
 
     const savedUserGroup = await UserGroup.create(joinedTable);

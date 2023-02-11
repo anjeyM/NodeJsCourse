@@ -5,11 +5,12 @@ type UserStatic = typeof Model
     & {associate: (models: any) => void}
     & {new(values?: Record<string, unknown>, options?: BuildOptions): any}
 
-export const User = <UserStatic>sequelize.define('User', {
+export const User = <UserStatic>sequelize.define('users', {
   id: {
-    type: DataTypes.INTEGER.UNSIGNED,
+    type: DataTypes.INTEGER,
     autoIncrement: true,
     primaryKey: true,
+    unique: true,
   },
   login: {
     type: new DataTypes.STRING(128),
@@ -28,7 +29,6 @@ export const User = <UserStatic>sequelize.define('User', {
       allowNull: false,
   },
 }, {
-  tableName: 'users',
   timestamps: false,
 });
 

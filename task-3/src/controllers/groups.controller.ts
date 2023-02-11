@@ -1,75 +1,80 @@
-import {Request, Response, NextFunction} from "express";
+import {Request, Response} from "express";
 import {Group} from '../models';
 import {GroupInterface} from '../shared/types/interfaces';
 
 //** Gets all groups. */
-export const getGroups = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        const groups: GroupInterface[] = await Group.findAll();
-        return res.status(200).send(groups);
-        //eslint-disable-next-line
-      } catch (error: any) {
-        next(error);
-        return res.status(500).send(error.message);
-      }
+export const getGroups = async (req: Request, res: Response) => {
+  Group.findAll().then((groups: GroupInterface[]) => {
+    if (!groups) {
+      return res.status(500).send("groups not found");
+    }
+    return res.status(200).send(groups); 
+  }).catch(error => {
+    console.log(error);
+    return res.status(500).send(error);
+  });  
 }
 
 //** Gets group by Id. */
-export const getGroup = async (req: Request, res: Response, next: NextFunction) => {
-    const id: string = req.params.id;
-  
-    try {
-      const group: GroupInterface | null = await Group.findByPk(id);
-      if (group) {
-        return res.status(200).send(group);
-      }
-  
-      return res.status(404).send("group not found");
-      //eslint-disable-next-line
-    } catch (error: any) {
-      next(error);
-      return res.status(500).send(error.message);
+export const getGroup = async (req: Request, res: Response) => {
+  Group.findByPk(req.params.id).then((group: GroupInterface) => {
+    if (!group) {
+      return res.status(500).send("group not found");
     }
+    return res.status(200).send(group); 
+  }).catch(error => {
+    console.log(error);
+    return res.status(500).send(error);
+  });
 };
 
 //** Creates new group. */
-export const setGroup = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const group: GroupInterface = await Group.create({ ...req.body });
-    
+export const setGroup = async (req: Request, res: Response) => {
+  Group.create({ ...req.body }).then((group: GroupInterface) => {
+    if(!group) {
+      return res.status(500).send('Something went wrong trying to create group.');
+    }
     return res.status(201).json(group);
-    //eslint-disable-next-line
-  } catch (error: any) {
-    next(error);
-    return res.status(500).send(error.message);
-  }
+  }).catch(error => {
+    console.log(error);
+    return res.status(500).send(error);
+  })
 };
 
 //** Updates group. */
-export const updateGroup = async (req: Request, res: Response, next: NextFunction) => {
+export const updateGroup = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    await Group.update({ ...req.body }, { where: { id } });
-    const updatedGroup: GroupInterface | null = await Group.findByPk(id);
+    const updatedGroup = await Group.update({ ...req.body }, { where: { id } });
+
+    if (!updatedGroup) {
+      return res.status(500).send('Something went wrong trying to update the group.');
+    }
 
     return res.status(201).json(updatedGroup);
     //eslint-disable-next-line
   } catch (error: any) {
-    next(error);
+    console.log(error);
     return res.status(500).send(error.message);
   }
 };
 
 //** Deletes group. */
 export const deleteGroup = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-    const deletedGroup: GroupInterface | null = await Group.findByPk(id);
-    await Group.destroy({ where: { id } });
+  const { id } = req.params;
+  const deletedGroup: GroupInterface | null = await Group.findByPk(id);
 
-    return res.sendStatus(204).json(deletedGroup);
-    //eslint-disable-next-line
-  } catch (error: any) {
-    return res.status(500).send(error.message);
+  if (!deletedGroup) {
+    return res.status(500).send('There is no group with such Id.');
   }
+
+  Group.destroy({ where: { id } }).then((response) => {
+    if(!response) {
+      return res.status(500).send('Something went wrong trying to delete the group.');
+    }
+    return res.status(201).json(deletedGroup);
+  }).catch(error => {
+    console.log(error);
+    return res.status(500).send(error);
+  })
 };

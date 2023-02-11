@@ -1,20 +1,15 @@
 import {DataTypes} from 'sequelize';
 import {sequelize} from './db';
   
-export const UserGroup = sequelize.define('ProductOrder', {
+export const UserGroup = sequelize.define('usergroup', {
     id: {
-      type: DataTypes.INTEGER.UNSIGNED,
+      type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
       allowNull: false,
+      unique: true,
     },
-    userId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
-    groupId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
-}, {});
+}, {
+  timestamps: false,
+});
   
