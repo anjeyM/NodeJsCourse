@@ -60,7 +60,7 @@ export const setUser = async (req: Request, res: Response, next: NextFunction) =
       return res.status(500).send('Something went wrong trying to create user.');
     }
     // Add created user to the user permission group (id: 1);
-    const savedUserGroup = await addUsersToGroup(user.id, 1);
+    const savedUserGroup = await addUsersToGroup(1, user.id);
     if (!savedUserGroup) {
       logger.error('Something went wrong trying to add user to group');
       return res.status(500).send('Something went wrong trying to add user to group.');
