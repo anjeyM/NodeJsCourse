@@ -11,8 +11,8 @@ export const validateSchema = (schema: any) => {
         if(error) {
             res.status(400).json(errorResponse(error.details));
         } else {
-            next();
+            return next();
         }
-        next();
+        return next();
     }
 }
