@@ -1,8 +1,6 @@
 import * as winston from 'winston';
 import * as path from 'path';
-import dotenv from "dotenv";
 
-dotenv.config();
 const logFormat = winston.format.printf(info => `${info.timestamp} ${info.level} [${info.label}]: ${info.message}`)
 
 export const logger = winston.createLogger({

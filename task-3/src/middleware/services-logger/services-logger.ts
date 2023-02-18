@@ -1,5 +1,6 @@
 import {Request, Response, NextFunction} from "express";
 
+//** Provides function calls logging. */
 export const servicesLogger = (req: Request, res: Response, next: NextFunction) => {
     (function () {
         const oldCall = Function.prototype.call;
