@@ -3,16 +3,18 @@ import * as UserService from "../services/user-service/user.service";
 import {User, Group, UserGroup} from '../models';
 import {GroupInterface, UserInterface} from '../shared/types/interfaces';
 import {addUsersToGroup} from '../transactions/user/user.transactions';
+import {logger} from '../shared/loggers/error-logger';
 
 //** Gets all users. */
 export const getUsers = async (req: Request, res: Response) => {
   User.findAll({include: Group}).then((users: UserInterface[]) => {
     if (!users) {
+      logger.error('Error call getUsers(): user not found');
       return res.status(500).send("users not found");
     }
     return res.status(200).send(users); 
   }).catch(error => {
-    console.log(error);
+    logger.error(`Error: ${error.message} | Method: getUsers() with args: %O`, req.body);
     return res.status(500).send(error);
   });
 }
@@ -23,12 +25,13 @@ export const getSortedUserList = async (req: Request, res: Response, next: NextF
 
   User.findAll({include: Group}).then((users: UserInterface[]) => {
     if (!users) {
+      logger.error('Error call findAll(): user not found');
       return res.status(500).send("users not found");
     }
     const usersLimit: UserInterface[] | null = UserService.getAutoSuggestList(limit, users);
     return res.status(200).send(usersLimit || []); 
   }).catch(error => {
-    console.log(error);
+    logger.error(`Error: ${error.message} | Method: getSortedUserList() with args: %O`, req.body);
     next(error);
     return res.status(500).send(error);
   });
@@ -38,11 +41,12 @@ export const getSortedUserList = async (req: Request, res: Response, next: NextF
 export const getUser = async (req: Request, res: Response, next: NextFunction) => {
   User.findByPk(req.params.id, {include: Group}).then((user: UserInterface) => {
     if (!user) {
+      logger.error('Error call getUser(): user not found');
       return res.status(500).send("user not found");
     }
     return res.status(200).send(user); 
   }).catch(error => {
-    console.log(error);
+    logger.error(`Error: ${error.message} | Method: getUser() with args: %O`, req.body);
     next(error);
     return res.status(500).send(error);
   });
@@ -52,16 +56,18 @@ export const getUser = async (req: Request, res: Response, next: NextFunction) =
 export const setUser = async (req: Request, res: Response, next: NextFunction) => {
   User.create({ ...req.body }).then(async (user: UserInterface) => {
     if(!user) {
+      logger.error('Something went wrong trying to create user.');
       return res.status(500).send('Something went wrong trying to create user.');
     }
     // Add created user to the user permission group (id: 1);
-    const savedUserGroup = await addUsersToGroup(user.id, 1);
+    const savedUserGroup = await addUsersToGroup(1, user.id);
     if (!savedUserGroup) {
+      logger.error('Something went wrong trying to add user to group');
       return res.status(500).send('Something went wrong trying to add user to group.');
     }
     return res.status(201).json(user);
   }).catch(error => {
-    console.log(error);
+    logger.error(`Error: ${error.message} | Method: setUser() with args: %O`, req.body);
     next(error);
     return res.status(500).send(error);
   })
@@ -72,6 +78,7 @@ export const updateUser = async (req: Request, res: Response) => {
   const user = await User.findByPk(req.params.id);
 
   if (!user) {
+    logger.error('Error call updateUser() (User not found) with args: %O', req.body);
     return res.status(400).send('User not found');
   }
 
@@ -84,6 +91,7 @@ export const updateUser = async (req: Request, res: Response) => {
   }, { where: { id: req.params.id } });
 
   if (!updatedUser) {
+    logger.error('Error call updateUser() (Something went wrong trying to update the user) with args: %O', req.body);
     return res.status(500).send('Something went wrong trying to update user');
   }
 
@@ -101,9 +109,13 @@ export const updateUser = async (req: Request, res: Response) => {
     const savedUserGroup = await UserGroup.create(joinedTable);
 
     if (!savedUserGroup) {
+      logger.error('Error call updateUser() (Something went wrong trying to update the user. Failed to create user group) with args: %O', req.body);
       return res.status(500).send('Something went wrong trying to update the user. Failed to create user group');
     }
-  }));
+  })).catch(error => {
+    logger.error(`Error: ${error.message} | Method: updateUser() with args: %O`, req.body);
+    return res.status(500).send(error);
+  });
 
   return res.status(201).json(updatedUser);
 };
@@ -122,6 +134,7 @@ export const deleteUser = async (req: Request, res: Response) => {
   });
 
   if (!deletedUser) {
+    logger.error('Error call deleteUser() with args: %O', req.body);
     return res.status(500).send('There was an error trying to delete the user.');
   }
 
