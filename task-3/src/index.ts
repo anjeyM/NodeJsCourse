@@ -6,6 +6,7 @@ import helmet from "helmet";
 import * as winston from 'winston';
 import {usersRouter} from './routes/user.route';
 import {groupsRouter} from './routes/group.route';
+import {authRouter} from './routes/auth.route';
 import {DB} from './models/db';
 import {errorHandler} from "./middleware/error/error.middleware";
 import {notFoundHandler} from "./middleware/not-found/not-found.middleware";
@@ -21,6 +22,7 @@ app.use(cors());
 app.use(express.json());
 app.use("/api/users", usersRouter);
 app.use("/api/groups", groupsRouter);
+app.use("/api/login", authRouter);
 app.use(notFoundHandler);
 app.use(errorHandler);
 

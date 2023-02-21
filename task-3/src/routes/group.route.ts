@@ -2,20 +2,24 @@ import * as express from 'express';
 import {getGroups, getGroup, setGroup, updateGroup, deleteGroup} from '../controllers/groups.controller';
 import {validateSchema} from '../middleware/validation/validation.middleware';
 import {groupValidationSchema} from '../shared/types/interfaces';
+import {checkToken} from '../middleware/jwt/check-token.middleware';
+import cors from 'cors';
 
 export const groupsRouter = express.Router();
 
 //** GET groups. */
-groupsRouter.get('/', getGroups);
+groupsRouter.get('/', cors(), checkToken, getGroups);
 
 //** GET group/:id */ 
-groupsRouter.get('/:id', getGroup);
+groupsRouter.get('/:id', cors(), checkToken, getGroup);
 
 //** POST groups */ 
-groupsRouter.post("/", validateSchema(groupValidationSchema), setGroup);
+groupsRouter.post("/", cors(), checkToken, validateSchema(groupValidationSchema), setGroup);
 
 //** PUT group/:id */
-groupsRouter.put("/:id", validateSchema(groupValidationSchema), updateGroup);
+groupsRouter.options('/:id', cors());
+groupsRouter.put("/:id", checkToken, validateSchema(groupValidationSchema), updateGroup);
 
 //** DELETE group/:id */
-groupsRouter.delete("/:id", deleteGroup);
+groupsRouter.options('/:id', cors());
+groupsRouter.delete("/:id", checkToken, deleteGroup);

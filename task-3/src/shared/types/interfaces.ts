@@ -34,6 +34,12 @@ export const groupValidationSchema = Joi.object({
     permissions: Joi.array().required(),
 })
 
+//** Login query validation schema. */
+export const loginValidationSchema = Joi.object({
+    login: Joi.string().required(),
+    password: Joi.string().pattern(new RegExp('^(?=.*?)(?=.*?[a-zA-Z])[a-zA-Z]+$')).required(),
+})
+
 //** Permission types. */
 export enum Permissions {
     READ = 'read',
