@@ -15,7 +15,9 @@ groupsRouter.get('/:id', getGroup);
 groupsRouter.post("/", validateSchema(groupValidationSchema), setGroup);
 
 //** PUT group/:id */
+groupsRouter.options('/:id');
 groupsRouter.put("/:id", validateSchema(groupValidationSchema), updateGroup);
 
 //** DELETE group/:id */
+groupsRouter.options('/:id');
 groupsRouter.delete("/:id", deleteGroup);

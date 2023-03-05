@@ -18,7 +18,9 @@ usersRouter.get('/:id', getUser);
 usersRouter.post("/", validateSchema(userValidationSchema), setUser);
 
 //** PUT user/:id */
-usersRouter.put("/:id", validateSchema(userValidationSchema), updateUser)
+usersRouter.options('/:id');
+usersRouter.put("/:id", validateSchema(userValidationSchema), updateUser);
 
 //** DELETE user/:id */
-usersRouter.delete("/:id", deleteUser)
+usersRouter.options('/:id');
+usersRouter.delete("/:id", deleteUser);
