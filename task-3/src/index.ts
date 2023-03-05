@@ -11,6 +11,7 @@ import {DB} from './models/db';
 import {errorHandler} from "./middleware/error/error.middleware";
 import {notFoundHandler} from "./middleware/not-found/not-found.middleware";
 import {logger} from './shared/loggers/error-logger';
+import {checkToken} from './middleware/jwt/check-token.middleware';
 
 dotenv.config();
 
@@ -20,8 +21,8 @@ const app = express();
 app.use(helmet());
 app.use(cors());
 app.use(express.json());
-app.use("/api/users", usersRouter);
-app.use("/api/groups", groupsRouter);
+app.use("/api/users", checkToken, usersRouter);
+app.use("/api/groups", checkToken, groupsRouter);
 app.use("/api/login", authRouter);
 app.use(notFoundHandler);
 app.use(errorHandler);
