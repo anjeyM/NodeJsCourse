@@ -15,26 +15,32 @@ import {checkToken} from './middleware/jwt/check-token.middleware';
 
 dotenv.config();
 
-const app = express();
-
-/** App Configuration. */
-app.use(helmet());
-app.use(cors());
-app.use(express.json());
-app.use("/api/users", checkToken, usersRouter);
-app.use("/api/groups", checkToken, groupsRouter);
-app.use("/api/login", authRouter);
-app.use(notFoundHandler);
-app.use(errorHandler);
-
-/** Server Activation. */
-const server = http.createServer(app);
 const port = parseInt(process.env.PORT as string, 10) || 3100;
 
-server.listen(port, async() => {
+export async function createServer(): Promise<any> {
+  const app = express();
+
+  /** App Configuration. */
+  app.use(helmet());
+  app.use(cors());
+  app.use(express.json());
+  app.use("/api/users", checkToken, usersRouter);
+  app.use("/api/groups", checkToken, groupsRouter);
+  app.use("/api/login", authRouter);
+  app.use(notFoundHandler);
+  app.use(errorHandler);
+  
+  /** Server Activation. */
+  const server = http.createServer(app);
+
+  return server;
+}
+
+createServer().then(server => server.listen(port, async() => {
   await DB.initDB();
   console.log("Server started on port ", port);
-});
+}))
+
 
 process.on('uncaughtException', error => {
   logger.exceptions.handle(
