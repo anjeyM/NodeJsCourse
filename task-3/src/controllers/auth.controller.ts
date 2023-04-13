@@ -16,7 +16,7 @@ export const login = async (req: Request, res: Response) => {
         return res.status(403).send('User not found');
     }
     const payload  = {"id": user.id, "login": user.login, "isdeleted": user.isdeleted};
-    const token = sign(payload, process.env.TOKEN_KEY as Secret, {expiresIn: 3000});
+    const token = sign(payload, process.env.TOKEN_KEY as Secret, {expiresIn: 5000});
 
     return res.send(token);
 };

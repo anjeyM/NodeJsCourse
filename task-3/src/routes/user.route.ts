@@ -1,26 +1,47 @@
 import * as express from 'express';
-import {getUsers, getSortedUserList, getUser, setUser, updateUser, deleteUser} from '../controllers/user.controller';
+import UserController from '../controllers/user.controller';
 import {validateSchema} from '../middleware/validation/validation.middleware';
-import {userValidationSchema} from '../shared/types/interfaces';
+import {userValidationSchema, userUpdateValidationSchema} from '../shared/types/interfaces';
 
 export const usersRouter = express.Router();
+const controller = new UserController();
 
 //** GET users. */
-usersRouter.get('/', getUsers);
+usersRouter.get('/', async (req, res) => {
+    const response = await controller.getUsers(req, res);
+    return response;
+});
 
 //** GET users/:n  */
-usersRouter.get('/sorted-users/:limit', getSortedUserList);
+usersRouter.get('/sorted-users/:limit', async (req, res, next) => {
+    const response = await controller.getSortedUserList(req, res, next);
+    return response;
+});
 
 //** GET user/:id */ 
-usersRouter.get('/:id', getUser);
+usersRouter.get('/:id', async (req, res, next) => {
+    const response = await controller.getUser(req, res, next);
+    return response;
+});
 
 //** POST users */ 
-usersRouter.post("/", validateSchema(userValidationSchema), setUser);
+usersRouter.post('/', validateSchema(userValidationSchema), async (req, res, next) => {
+    const response = await controller.setUser(req, res, next);
+    return response;
+});
 
 //** PUT user/:id */
 usersRouter.options('/:id');
-usersRouter.put("/:id", validateSchema(userValidationSchema), updateUser);
+usersRouter.put('/:id', validateSchema(userUpdateValidationSchema), async (req, res) => {
+    const response = await controller.updateUser(req, res);
+    return response;
+});
 
 //** DELETE user/:id */
 usersRouter.options('/:id');
-usersRouter.delete("/:id", deleteUser);
+usersRouter.delete('/:id', async (req, res) => {
+    const response = await controller.deleteUser(req, res);
+    return response;
+});
+
+export default usersRouter

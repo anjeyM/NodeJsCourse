@@ -28,8 +28,24 @@ export const userValidationSchema = Joi.object({
     isdeleted: Joi.boolean().required(),
 })
 
+//** User query validation schema. */
+export const userUpdateValidationSchema = Joi.object({
+    id: Joi.number().required(),
+    login: Joi.string().required(),
+    password: Joi.string().pattern(new RegExp('^(?=.*?)(?=.*?[a-zA-Z])[a-zA-Z]+$')).required(),
+    age: Joi.number().min(4).max(130).required(),
+    isdeleted: Joi.boolean().required(),
+})
+
 //** Group query validation schema. */
 export const groupValidationSchema = Joi.object({
+    name: Joi.string().required(),
+    permissions: Joi.array().required(),
+})
+
+//** Group query validation schema. */
+export const groupUpdateValidationSchema = Joi.object({
+    id: Joi.number().required(),
     name: Joi.string().required(),
     permissions: Joi.array().required(),
 })
