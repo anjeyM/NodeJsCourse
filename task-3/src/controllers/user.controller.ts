@@ -10,12 +10,12 @@ export default class UserController {
   public async getUsers(req: Request, res: Response) {
     User.findAll({include: Group}).then((users: UserInterface[]) => {
       if (!users) {
-        // logger.error('Error call getUsers(): user not found');
+        logger.error('Error call getUsers(): user not found');
         return res.status(500).send("users not found");
       }
       return res.status(200).send(users); 
     }).catch(error => {
-      // logger.error(`Error: ${error.message} | Method: getUsers() with args: %O`, req.body);
+      logger.error(`Error: ${error.message} | Method: getUsers() with args: %O`, req.body);
       return res.status(500).send(error);
     });
   }
