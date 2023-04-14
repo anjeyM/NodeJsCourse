@@ -46,21 +46,24 @@ export const setGroup = async (req: Request, res: Response) => {
 
 //** Updates group. */
 export const updateGroup = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-    const updatedGroup = await Group.update({ ...req.body }, { where: { id } });
-
-    if (!updatedGroup) {
-      logger.error('Error call updateUser() (Something went wrong trying to update the group) with args: %O', req.body);
-      return res.status(500).send('Something went wrong trying to update the group.');
-    }
-
-    return res.status(201).json(updatedGroup);
-    //eslint-disable-next-line
-  } catch (error: any) {
-    logger.error(`Error: ${error.message} | Method: updateGroup() with args: %O`, req.body);
-    return res.status(500).send(error.message);
+  const group = await Group.findByPk(req.params.id);
+  if (!group) {
+    logger.error('Error call updateGroup() (Group not found) with args: %O', req.body);
+    return res.status(400).send('Group not found');
   }
+
+  const updatedGroup = await group.update({
+    id: req.body.id || group.id,
+    name: req.body.name || group.name,
+    permissions: req.body.permissions || group.permissions,
+  }, { where: { id: req.params.id } });
+
+  if (!updatedGroup) {
+    logger.error('Error call updateGroup() (Something went wrong trying to update group) with args: %O', req.body);
+    return res.status(500).send('Something went wrong trying to update group');
+  }
+
+  return res.status(201).json(updatedGroup);
 };
 
 //** Deletes group. */

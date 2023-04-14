@@ -4,10 +4,9 @@ import http from 'http';
 import cors from "cors";
 import helmet from "helmet";
 import * as winston from 'winston';
-import {usersRouter} from './routes/user.route';
+import usersRouter from './routes/user.route';
 import {groupsRouter} from './routes/group.route';
 import {authRouter} from './routes/auth.route';
-import {DB} from './models/db';
 import {errorHandler} from "./middleware/error/error.middleware";
 import {notFoundHandler} from "./middleware/not-found/not-found.middleware";
 import {logger} from './shared/loggers/error-logger';
@@ -15,7 +14,9 @@ import {checkToken} from './middleware/jwt/check-token.middleware';
 
 dotenv.config();
 
-const app = express();
+export const port = parseInt(process.env.PORT as string, 10) || 3100;
+
+export const app = express();
 
 /** App Configuration. */
 app.use(helmet());
@@ -27,14 +28,7 @@ app.use("/api/login", authRouter);
 app.use(notFoundHandler);
 app.use(errorHandler);
 
-/** Server Activation. */
-const server = http.createServer(app);
-const port = parseInt(process.env.PORT as string, 10) || 3100;
-
-server.listen(port, async() => {
-  await DB.initDB();
-  console.log("Server started on port ", port);
-});
+export const server = http.createServer(app)
 
 process.on('uncaughtException', error => {
   logger.exceptions.handle(

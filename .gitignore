@@ -32,7 +32,7 @@ speed-measure-plugin*.json
 
 # misc
 /connect.lock
-/coverage
+/task-3/coverage
 /libpeerconnection.log
 npm-debug.log
 yarn-error.log
